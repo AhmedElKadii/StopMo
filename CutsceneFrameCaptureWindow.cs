@@ -107,10 +107,6 @@ public class CutsceneFrameCaptureWindow : EditorWindow
             new GUIContent("Characters in this Frame:", "Characters to capture."),
             EditorStyles.boldLabel
         );
-        EditorGUILayout.HelpBox(
-            "Only add characters that should be VISIBLE in this frame. Their bone poses will be captured.",
-            MessageType.Info
-        );
         
         int indexToRemove = -1;
         for (int i = 0; i < charactersToCapture.Count; i++)
@@ -483,6 +479,7 @@ public class CutsceneFrameCaptureWindow : EditorWindow
             return;
         
         targetManager.ApplyFrame(index);
+        PopulateCharactersFromFrame(index);
         SceneView.RepaintAll();
     }
     
@@ -882,6 +879,47 @@ public class CutsceneFrameCaptureWindow : EditorWindow
         Debug.Log($"Frame '{frameContainerName}' captured with {newFrame.characters.Count} characters! Total frames: {targetManager.frames.Count}");
         
         charactersToCapture.Clear();
+    }
+
+    private void PopulateCharactersFromFrame(int index)
+    {
+        if (targetManager == null || index < 0 || index >= targetManager.frames.Count)
+            return;
+
+        CutsceneFrame frame = targetManager.frames[index];
+        charactersToCapture.Clear();
+
+        foreach (CharacterState charState in frame.characters)
+        {
+            if (charState == null || string.IsNullOrEmpty(charState.characterName))
+                continue;
+
+            GameObject character = FindCharacterByName(charState.characterName);
+            if (character != null && !charactersToCapture.Contains(character))
+            {
+                charactersToCapture.Add(character);
+            }
+        }
+    }
+
+    private GameObject FindCharacterByName(string characterName)
+    {
+        if (targetManager == null) return null;
+
+        if (targetManager.francisco != null && targetManager.francisco.name == characterName)
+            return targetManager.francisco;
+        if (targetManager.barnardo != null && targetManager.barnardo.name == characterName)
+            return targetManager.barnardo;
+        if (targetManager.marcellus != null && targetManager.marcellus.name == characterName)
+            return targetManager.marcellus;
+        if (targetManager.horatio != null && targetManager.horatio.name == characterName)
+            return targetManager.horatio;
+        if (targetManager.hamlet != null && targetManager.hamlet.name == characterName)
+            return targetManager.hamlet;
+        if (targetManager.ghost != null && targetManager.ghost.name == characterName)
+            return targetManager.ghost;
+
+        return GameObject.Find(characterName);
     }
 
     private string GetFrameTooltip(int index)
